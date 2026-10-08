@@ -1,0 +1,114 @@
+{
+  "pbtResults": {
+    "1. Write bug condition exploration tests": {
+      "status": "passed",
+      "failingExample": "Bug 1 (server.js no guard):\n  AssertionError: COUNTEREXAMPLE (Bug 1): server.js does not reference the placeholder ACCESS_TOKEN_SECRET value \"replace_with_access_token_secret\". No startup guard is present — the server starts insecurely with placeholder secrets.\n  actual: false, expected: true, operator: '=='\n\nBug 2 (CWD-relative env load):\n  AssertionError: COUNTEREXAMPLE (Bug 2): process.env.ACCESS_TOKEN_SECRET is undefined after simulating env load with CWD=\"C:\\Users\\Kanabh\\.vscode\\SourceUpCRM\". loadEnv.js uses a CWD-relative path (\"./.env.local\") — when the server is started from outside Backend/ the file is not found and process.env stays empty.\n  actual: undefined, expected: undefined, operator: 'notStrictEqual'\n\nBug 3 (incomplete MONGODB_URI):\n  AssertionError: COUNTEREXAMPLE (Bug 3): MONGODB_URI=\"mongodb://127.0.0.1:27017\" does not match the expected pattern mongodb://[host]:[port]/[dbname]. The URI has no database-name path component.\n  actual: 'mongodb://127.0.0.1:27017', expected: /^mongodb:\\/\\/.+:\\d+\\/\\S+/, operator: 'match'",
+      "lastRunTimestamp": 1791062235099
+    }
+  },
+  "executionHistory": {
+    "1. Write bug condition exploration tests": [
+      {
+        "executionId": "27a6c521-164c-4747-bb72-0e20c59a91a8",
+        "chatSessionId": "sess_b0576d1b-df29-4b4a-8707-9f3850799fc4",
+        "timestamp": 1791061086151
+      },
+      {
+        "executionId": "27a6c521-164c-4747-bb72-0e20c59a91a8",
+        "chatSessionId": "sess_b0576d1b-df29-4b4a-8707-9f3850799fc4",
+        "timestamp": 1791061095920
+      },
+      {
+        "executionId": "27a6c521-164c-4747-bb72-0e20c59a91a8",
+        "chatSessionId": "sess_b0576d1b-df29-4b4a-8707-9f3850799fc4",
+        "timestamp": 1791062252538
+      }
+    ],
+    "2. Write preservation property tests (BEFORE implementing fix)": [
+      {
+        "executionId": "27a6c521-164c-4747-bb72-0e20c59a91a8",
+        "chatSessionId": "sess_b0576d1b-df29-4b4a-8707-9f3850799fc4",
+        "timestamp": 1791061086213
+      },
+      {
+        "executionId": "27a6c521-164c-4747-bb72-0e20c59a91a8",
+        "chatSessionId": "sess_b0576d1b-df29-4b4a-8707-9f3850799fc4",
+        "timestamp": 1791062256922
+      },
+      {
+        "executionId": "27a6c521-164c-4747-bb72-0e20c59a91a8",
+        "chatSessionId": "sess_b0576d1b-df29-4b4a-8707-9f3850799fc4",
+        "timestamp": 1791062391082
+      }
+    ],
+    "3.1 Update `Backend/.env.local` — fix `MONGODB_URI` and document secret generation": [
+      {
+        "executionId": "27a6c521-164c-4747-bb72-0e20c59a91a8",
+        "chatSessionId": "sess_b0576d1b-df29-4b4a-8707-9f3850799fc4",
+        "timestamp": 1791061086258
+      },
+      {
+        "executionId": "27a6c521-164c-4747-bb72-0e20c59a91a8",
+        "chatSessionId": "sess_b0576d1b-df29-4b4a-8707-9f3850799fc4",
+        "timestamp": 1791062395521
+      },
+      {
+        "executionId": "27a6c521-164c-4747-bb72-0e20c59a91a8",
+        "chatSessionId": "sess_b0576d1b-df29-4b4a-8707-9f3850799fc4",
+        "timestamp": 1791062477598
+      }
+    ],
+    "3.2 Fix `Backend/loadEnv.js` — CWD-independent env file resolution": [
+      {
+        "executionId": "27a6c521-164c-4747-bb72-0e20c59a91a8",
+        "chatSessionId": "sess_b0576d1b-df29-4b4a-8707-9f3850799fc4",
+        "timestamp": 1791061086312
+      },
+      {
+        "executionId": "27a6c521-164c-4747-bb72-0e20c59a91a8",
+        "chatSessionId": "sess_b0576d1b-df29-4b4a-8707-9f3850799fc4",
+        "timestamp": 1791062481868
+      },
+      {
+        "executionId": "27a6c521-164c-4747-bb72-0e20c59a91a8",
+        "chatSessionId": "sess_b0576d1b-df29-4b4a-8707-9f3850799fc4",
+        "timestamp": 1791062520044
+      }
+    ],
+    "3.3 Fix `Backend/MongoDB/Connection.js` — use `MONGODB_URI` directly": [
+      {
+        "executionId": "27a6c521-164c-4747-bb72-0e20c59a91a8",
+        "chatSessionId": "sess_b0576d1b-df29-4b4a-8707-9f3850799fc4",
+        "timestamp": 1791061086370
+      }
+    ],
+    "3.4 Add startup guard in `Backend/server.js` — reject placeholder secrets at boot": [
+      {
+        "executionId": "27a6c521-164c-4747-bb72-0e20c59a91a8",
+        "chatSessionId": "sess_b0576d1b-df29-4b4a-8707-9f3850799fc4",
+        "timestamp": 1791061086426
+      }
+    ],
+    "3.5 Verify bug condition exploration test now passes": [
+      {
+        "executionId": "27a6c521-164c-4747-bb72-0e20c59a91a8",
+        "chatSessionId": "sess_b0576d1b-df29-4b4a-8707-9f3850799fc4",
+        "timestamp": 1791061086481
+      }
+    ],
+    "3.6 Verify preservation tests still pass": [
+      {
+        "executionId": "27a6c521-164c-4747-bb72-0e20c59a91a8",
+        "chatSessionId": "sess_b0576d1b-df29-4b4a-8707-9f3850799fc4",
+        "timestamp": 1791061086530
+      }
+    ],
+    "4. Checkpoint — Ensure all tests pass": [
+      {
+        "executionId": "27a6c521-164c-4747-bb72-0e20c59a91a8",
+        "chatSessionId": "sess_b0576d1b-df29-4b4a-8707-9f3850799fc4",
+        "timestamp": 1791061086579
+      }
+    ]
+  }
+}

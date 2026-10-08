@@ -1,0 +1,6 @@
+Company / Brand Name	Contact Person	Designation of Contact Person	Phone / WhatsApp	Email	City / State	Website / Instagram Handle
+UrbanKnit Apparel	Aarav Sharma	Head of Procurement	9820145872	aarav.sharma@urbanknit.in	Mumbai, Maharashtra	@urbanknit_apparel
+Zenith Solar Tech	Priya Venkatesh	Operations Director	9845011234	priya.v@zenithsolar.co	Bengaluru, Karnataka	zenithsolar.co
+Artisan Roasters	Rohan Kulkarni	Founder & Master Roaster	9711288901	rohan@artisanroasters.in	Pune, Maharashtra	@artisanroasterspune
+NexaGen Logistics	Meera Nair	Supply Chain Manager	9447065432	meera.nair@nexagenlogistics.com	Kochi, Kerala	nexagenlogistics.com
+TerraVeda Wellness	Dr. Ananya Sen	Chief Product Officer	9830023419	ananya.sen@terraveda.life	Kolkata, West Bengal	@terraveda.wellness

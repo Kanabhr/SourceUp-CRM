@@ -1,0 +1,74 @@
+# SourceUp CRM — Cursor Rules
+
+## Stack (match exactly — do not introduce new libraries)
+
+### Backend
+- Runtime: Node.js with ES Modules ("type": "module") — always import/export, never require()
+- Framework: Express 5
+- Database: MongoDB via Mongoose 9
+- Auth: jsonwebtoken 9 + bcrypt 6 + HttpOnly cookies
+- File uploads: Multer 2
+- Email: Nodemailer (SMTP)
+- PDF export: pdfkit
+- Excel export: exceljs
+- Validation: custom Validation.js utility (same pattern as BMS-APP)
+- Error handling: AsyncHandler + ApiError + ApiResponse utilities (same as BMS-APP)
+- Environment: dotenv — .env.local for dev, .env for production
+
+### Frontend
+- Framework: React 19 + Vite 8
+- Routing: React Router DOM v7
+- HTTP client: Axios — one shared instance with baseURL and withCredentials: true
+- Styling: Tailwind CSS v4 (Vite plugin — NOT PostCSS) + custom CSS variables
+- State management: React Context only — no Redux, no Zustand
+- Icons: lucide-react
+- Animations: motion (Framer Motion v13)
+- UI components: shadcn/ui + @base-ui/react
+- Fonts: @fontsource-variable/geist
+
+### Deployment
+- Backend: Render
+- Frontend: Vercel
+- Dev proxy: Vite proxies /api/v1/* → http://localhost:3000
+
+---
+
+## Backend Conventions
+
+### File naming
+- Controllers: PascalCase.controller.js (e.g. Lead.controller.js)
+- Routes: PascalCase.routes.js (e.g. Lead.routes.js)
+- Middleware: PascalCase.middleware.js
+- Models: PascalCase.schema.js
+- Utils: PascalCase.js
+
+### Every controller must use this structure
+```js
+import { AsyncHandler } from "../Utils/AsyncHandler.js";
+import { ApiError } from "../Utils/ApiError.js";
+import { ApiResponse } from "../Utils/ApiResponse.js";
+
+const myHandler = AsyncHandler(async (req, res) => {
+  // 1. Validate input
+  // 2. DB operation
+  // 3. Respond with ApiResponse
+});
+RBAC middleware — apply on every protected route
+js
+
+// requireRole checks req.user.role against allowed roles
+router.route("/leads").get(VerifyJWT, requireRole("sales", "manager", "superadmin"), getLeads);
+Cookie options — always use this exact pattern
+js
+
+const cookieOptions = {
+  httpOnly: true,
+  secure: process.env.NODE_ENV === "production",
+  sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+};
+ES Modules — always include .js extension in imports
+js
+
+import { Lead } from "../MongoDB/Models/Lead.schema.js";
+Never use try/catch inside AsyncHandler — let errors propagate
+Exception: OAuth-style redirect flows may use try/catch for per-case redirects

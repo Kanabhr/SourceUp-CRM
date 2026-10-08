@@ -1,0 +1,1 @@
+feature of lead generation must also include uploading a excel file containing from 10 to 100+ client leads and autofilling fields that are in it to database and integration of A.I will be used to later verfiy authenticity of client by visitng their website by link provided in that excel sheet

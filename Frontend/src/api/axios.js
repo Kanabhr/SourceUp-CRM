@@ -1,0 +1,28 @@
+import axios from "axios";
+
+const axiosService = axios.create({
+  baseURL: import.meta.env.VITE_API_URL || "/api/v1",
+  timeout: 10000,
+  withCredentials: true,
+  headers: {
+    "Content-Type": "application/json",
+    Accept: "application/json",
+  },
+});
+
+axiosService.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (
+      error.response?.status === 401 &&
+      !error.config?.url?.includes("/auth/login") &&
+      !error.config?.url?.includes("/auth/register") &&
+      !error.config?.url?.includes("/auth/me")
+    ) {
+      window.location.href = "/login";
+    }
+    return Promise.reject(error);
+  },
+);
+
+export default axiosService;
