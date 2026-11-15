@@ -3,27 +3,12 @@ import { LoginUser, LogoutUser, getCurrentUser } from "../api/authapi.js";
 
 export const AuthContext = createContext(null);
 
-// ─── DEV BYPASS ──────────────────────────────────────────────────────────────
-// Set to true to skip login and use a mock superadmin session.
-// Flip back to false before production.
-const DEV_BYPASS = false;
-const DEV_USER = {
-  _id: "000000000000000000000000",
-  username: "devadmin",
-  email: "dev@sourceup.local",
-  role: "superadmin",
-  isActive: true,
-};
-// ─────────────────────────────────────────────────────────────────────────────
-
 export function AuthProvider({ children }) {
-  const [user, setUser] = useState(DEV_BYPASS ? DEV_USER : null);
-  const [loading, setLoading] = useState(!DEV_BYPASS);
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [isWakingUp, setIsWakingUp] = useState(false);
 
   useEffect(() => {
-    if (DEV_BYPASS) return; // skip API call in dev bypass mode
-
     const wakeTimer = setTimeout(() => {
       setIsWakingUp(true);
     }, 3000);

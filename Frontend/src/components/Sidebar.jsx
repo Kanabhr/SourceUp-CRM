@@ -11,6 +11,7 @@ import {
   Percent,
   Settings,
   LogOut,
+  Download,
 } from "lucide-react";
 import { useAuth } from "../context/Authcontext";
 
@@ -20,11 +21,12 @@ const ALL_NAV = [
   { to: "/deals", icon: Handshake, label: "Deals", roles: ["superadmin", "manager", "sales"] },
   { to: "/commission", icon: Percent, label: "Commission", roles: ["superadmin", "manager", "sales"] },
   { to: "/purchase", icon: ShoppingCart, label: "Purchase", roles: ["superadmin", "manager", "purchase"] },
-  { to: "/vendors", icon: Building2, label: "Vendors", roles: ["superadmin", "manager", "purchase"] },
+  { to: "/vendors", icon: Building2, label: "Vendors", roles: ["superadmin", "manager", "purchase", "sales"] },
   { to: "/quotations", icon: FileText, label: "Quotations", roles: ["superadmin", "manager", "purchase"] },
   { to: "/reports", icon: BarChart3, label: "Reports", roles: ["superadmin", "manager"] },
   { to: "/users", icon: Users, label: "Users", roles: ["superadmin"] },
   { to: "/settings", icon: Settings, label: "Prefixes", roles: ["superadmin"] },
+  { to: "/export", icon: Download, label: "Export", roles: ["superadmin"] },
 ];
 
 const SIDEBAR_WIDTH = 260;

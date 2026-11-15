@@ -12,6 +12,9 @@ import Quotations from "./Pages/Quotations";
 import Reports from "./Pages/Reports";
 import Users from "./Pages/Users";
 import Settings from "./Pages/Settings";
+import Export from "./Pages/Export";
+import DealDetail from "./Pages/DealDetail";
+import PurchaseDetail from "./Pages/PurchaseDetail";
 import Notfound from "./Pages/Notfound";
 import ProtectedRoute from "./components/ProtectedRoute";
 import PublicRoute from "./components/PublicRoute";
@@ -39,16 +42,21 @@ function App() {
               <Route path="/leads" element={<Leads />} />
               <Route path="/leads/:id" element={<LeadDetail />} />
               <Route path="/deals" element={<Deals />} />
+              <Route path="/deals/:id" element={<DealDetail />} />
               <Route path="/commission" element={<Commission />} />
+            </Route>
+            <Route element={<RoleRoute roles={["superadmin", "manager", "purchase", "sales"]} />}>
+              <Route path="/vendors" element={<Vendors />} />
             </Route>
             <Route element={<RoleRoute roles={["superadmin", "manager", "purchase"]} />}>
               <Route path="/purchase" element={<Purchase />} />
-              <Route path="/vendors" element={<Vendors />} />
+              <Route path="/purchase/:id" element={<PurchaseDetail />} />
               <Route path="/quotations" element={<Quotations />} />
             </Route>
             <Route element={<RoleRoute roles={["superadmin"]} />}>
               <Route path="/users" element={<Users />} />
               <Route path="/settings" element={<Settings />} />
+              <Route path="/export" element={<Export />} />
             </Route>
           </Route>
         </Route>

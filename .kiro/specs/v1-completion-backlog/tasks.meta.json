@@ -1,0 +1,165 @@
+{
+  "pbtResults": {},
+  "executionHistory": {
+    "1. R1 upload middleware + Lead schema enrichment fields": [
+      {
+        "executionId": "f5188029-2017-42f7-a0fe-0f78f178e012",
+        "chatSessionId": "sess_42cd0a0b-9752-4756-8f34-a1178bc4cb1d",
+        "timestamp": 1792529953450
+      },
+      {
+        "executionId": "f5188029-2017-42f7-a0fe-0f78f178e012",
+        "chatSessionId": "sess_42cd0a0b-9752-4756-8f34-a1178bc4cb1d",
+        "timestamp": 1792530265932
+      }
+    ],
+    "2. R1 frontend lead fields + photo UI": [
+      {
+        "executionId": "f5188029-2017-42f7-a0fe-0f78f178e012",
+        "chatSessionId": "sess_42cd0a0b-9752-4756-8f34-a1178bc4cb1d",
+        "timestamp": 1792529953566
+      },
+      {
+        "executionId": "b15ac984-8d86-49bb-973f-1761c961aaf1",
+        "chatSessionId": "sess_5e160dd2-765b-43f1-90e4-3562c6e1caeb",
+        "timestamp": 1792531348421
+      },
+      {
+        "executionId": "b15ac984-8d86-49bb-973f-1761c961aaf1",
+        "chatSessionId": "sess_5e160dd2-765b-43f1-90e4-3562c6e1caeb",
+        "timestamp": 1792532190739
+      }
+    ],
+    "3. R8 service-prefix-aware deal numbering": [
+      {
+        "executionId": "f5188029-2017-42f7-a0fe-0f78f178e012",
+        "chatSessionId": "sess_42cd0a0b-9752-4756-8f34-a1178bc4cb1d",
+        "timestamp": 1792529953651
+      },
+      {
+        "executionId": "b15ac984-8d86-49bb-973f-1761c961aaf1",
+        "chatSessionId": "sess_5e160dd2-765b-43f1-90e4-3562c6e1caeb",
+        "timestamp": 1792532200265
+      },
+      {
+        "executionId": "b15ac984-8d86-49bb-973f-1761c961aaf1",
+        "chatSessionId": "sess_5e160dd2-765b-43f1-90e4-3562c6e1caeb",
+        "timestamp": 1792532449844
+      }
+    ],
+    "4. R3 Quotations backend": [
+      {
+        "executionId": "f5188029-2017-42f7-a0fe-0f78f178e012",
+        "chatSessionId": "sess_42cd0a0b-9752-4756-8f34-a1178bc4cb1d",
+        "timestamp": 1792529953726
+      },
+      {
+        "executionId": "b15ac984-8d86-49bb-973f-1761c961aaf1",
+        "chatSessionId": "sess_5e160dd2-765b-43f1-90e4-3562c6e1caeb",
+        "timestamp": 1792532461425
+      },
+      {
+        "executionId": "daeeca79-ba1f-4b2a-bcca-38e5c0bad2c9",
+        "chatSessionId": "sess_5e160dd2-765b-43f1-90e4-3562c6e1caeb",
+        "timestamp": 1792532755324
+      },
+      {
+        "executionId": "daeeca79-ba1f-4b2a-bcca-38e5c0bad2c9",
+        "chatSessionId": "sess_5e160dd2-765b-43f1-90e4-3562c6e1caeb",
+        "timestamp": 1792532759302
+      },
+      {
+        "executionId": "daeeca79-ba1f-4b2a-bcca-38e5c0bad2c9",
+        "chatSessionId": "sess_5e160dd2-765b-43f1-90e4-3562c6e1caeb",
+        "timestamp": 1792533005669
+      }
+    ],
+    "5. R3 Quotations frontend": [
+      {
+        "executionId": "f5188029-2017-42f7-a0fe-0f78f178e012",
+        "chatSessionId": "sess_42cd0a0b-9752-4756-8f34-a1178bc4cb1d",
+        "timestamp": 1792529953830
+      },
+      {
+        "executionId": "daeeca79-ba1f-4b2a-bcca-38e5c0bad2c9",
+        "chatSessionId": "sess_5e160dd2-765b-43f1-90e4-3562c6e1caeb",
+        "timestamp": 1792533013809
+      },
+      {
+        "executionId": "daeeca79-ba1f-4b2a-bcca-38e5c0bad2c9",
+        "chatSessionId": "sess_5e160dd2-765b-43f1-90e4-3562c6e1caeb",
+        "timestamp": 1792533179772
+      }
+    ],
+    "6. R2/R4/R5 shared aggregation + Dashboard/Reports backend": [
+      {
+        "executionId": "f5188029-2017-42f7-a0fe-0f78f178e012",
+        "chatSessionId": "sess_42cd0a0b-9752-4756-8f34-a1178bc4cb1d",
+        "timestamp": 1792529953922
+      },
+      {
+        "executionId": "daeeca79-ba1f-4b2a-bcca-38e5c0bad2c9",
+        "chatSessionId": "sess_5e160dd2-765b-43f1-90e4-3562c6e1caeb",
+        "timestamp": 1792533187332
+      },
+      {
+        "executionId": "daeeca79-ba1f-4b2a-bcca-38e5c0bad2c9",
+        "chatSessionId": "sess_5e160dd2-765b-43f1-90e4-3562c6e1caeb",
+        "timestamp": 1792533732506
+      }
+    ],
+    "7. R5 Commission endpoint + Dashboard/Reports/Commission frontend": [
+      {
+        "executionId": "f5188029-2017-42f7-a0fe-0f78f178e012",
+        "chatSessionId": "sess_42cd0a0b-9752-4756-8f34-a1178bc4cb1d",
+        "timestamp": 1792529953999
+      },
+      {
+        "executionId": "daeeca79-ba1f-4b2a-bcca-38e5c0bad2c9",
+        "chatSessionId": "sess_5e160dd2-765b-43f1-90e4-3562c6e1caeb",
+        "timestamp": 1792533740784
+      },
+      {
+        "executionId": "daeeca79-ba1f-4b2a-bcca-38e5c0bad2c9",
+        "chatSessionId": "sess_5e160dd2-765b-43f1-90e4-3562c6e1caeb",
+        "timestamp": 1792533994209
+      }
+    ],
+    "8. R6 DB export utility (backend + frontend)": [
+      {
+        "executionId": "f5188029-2017-42f7-a0fe-0f78f178e012",
+        "chatSessionId": "sess_42cd0a0b-9752-4756-8f34-a1178bc4cb1d",
+        "timestamp": 1792529954074
+      },
+      {
+        "executionId": "daeeca79-ba1f-4b2a-bcca-38e5c0bad2c9",
+        "chatSessionId": "sess_5e160dd2-765b-43f1-90e4-3562c6e1caeb",
+        "timestamp": 1792534001596
+      },
+      {
+        "executionId": "daeeca79-ba1f-4b2a-bcca-38e5c0bad2c9",
+        "chatSessionId": "sess_5e160dd2-765b-43f1-90e4-3562c6e1caeb",
+        "timestamp": 1792534618542
+      }
+    ],
+    "9. R7 Settings (ServicePrefix CRUD)": [
+      {
+        "executionId": "f5188029-2017-42f7-a0fe-0f78f178e012",
+        "chatSessionId": "sess_42cd0a0b-9752-4756-8f34-a1178bc4cb1d",
+        "timestamp": 1792529954148
+      },
+      {
+        "executionId": "daeeca79-ba1f-4b2a-bcca-38e5c0bad2c9",
+        "chatSessionId": "sess_5e160dd2-765b-43f1-90e4-3562c6e1caeb",
+        "timestamp": 1792534627419
+      }
+    ],
+    "10. Final checkpoint": [
+      {
+        "executionId": "f5188029-2017-42f7-a0fe-0f78f178e012",
+        "chatSessionId": "sess_42cd0a0b-9752-4756-8f34-a1178bc4cb1d",
+        "timestamp": 1792529954214
+      }
+    ]
+  }
+}

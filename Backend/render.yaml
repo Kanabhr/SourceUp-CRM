@@ -1,0 +1,39 @@
+services:
+  - type: web
+    name: sourceup-crm-backend
+    runtime: node
+    region: singapore
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 3000
+      - key: MONGODB_URI
+        sync: false          # set manually in Render dashboard — never commit
+      - key: ACCESS_TOKEN_SECRET
+        sync: false          # set manually in Render dashboard
+      - key: ACCESS_TOKEN_EXPIRY
+        value: 30m
+      - key: REFRESH_TOKEN_SECRET
+        sync: false          # set manually in Render dashboard
+      - key: REFRESH_TOKEN_EXPIRY
+        value: 7d
+      - key: FRONTEND_URL
+        sync: false          # set to your Vercel deployment URL e.g. https://sourceup-crm.vercel.app
+      - key: CORS_ORIGIN
+        sync: false          # same as FRONTEND_URL
+      - key: SMTP_HOST
+        value: smtp.gmail.com
+      - key: SMTP_PORT
+        value: 587
+      - key: SMTP_USER
+        sync: false          # your gmail address
+      - key: SMTP_PASS
+        sync: false          # your gmail app password
+      - key: SMTP_FROM
+        sync: false          # e.g. SourceUp CRM <you@gmail.com>
+      - key: GEMINI_API_KEY
+        sync: false          # set manually in Render dashboard

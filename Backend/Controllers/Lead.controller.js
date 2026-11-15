@@ -3,6 +3,11 @@ import { ApiError } from "../Utils/ApiError.js";
 import { ApiResponse } from "../Utils/ApiResponse.js";
 import { AuditLog } from "../MongoDB/Models/AuditLog.schema.js";
 import { Lead, STATUS_TRANSITIONS } from "../MongoDB/Models/Lead.schema.js";
+import { generateLeadId } from "../Utils/generateId.js";
+import fs from "fs";
+import path from "path";
+
+const LEAD_PHOTO_DIR = path.join("public", "uploads", "leads");
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
@@ -82,6 +87,9 @@ const createLead = AsyncHandler(async (req, res) => {
     clientName, company, contactPerson, email, phone,
     productNeeded, source, date, costPerLead,
     assignedTo, verificationStatus, verificationRemarks,
+    businessType, serviceType, sourcingOrigin,
+    gstNo, expectedOrderValue, nextFollowUpDate, lastContactDate, remarks,
+    packingDetails, moq, cbp, targetPrice,
   } = req.body;
 
   // Required field checks
@@ -113,7 +121,10 @@ const createLead = AsyncHandler(async (req, res) => {
       ? req.user._id
       : assignedTo || req.user._id;
 
+  const leadId = await generateLeadId();
+
   const lead = await Lead.create({
+    leadId,
     clientName: clientName.trim(),
     company: company?.trim() || "",
     contactPerson: contactPerson?.trim() || "",
@@ -126,6 +137,18 @@ const createLead = AsyncHandler(async (req, res) => {
     assignedTo: resolvedAssignedTo,
     verificationStatus: verificationStatus || "Unverified",
     verificationRemarks: verificationRemarks?.trim() || "",
+    businessType: businessType || "",
+    serviceType: serviceType || "",
+    sourcingOrigin: sourcingOrigin || "",
+    gstNo: gstNo?.trim() || "",
+    expectedOrderValue: expectedOrderValue ? Number(expectedOrderValue) : null,
+    packingDetails: packingDetails?.trim() || "",
+    moq: moq ? Number(moq) : null,
+    cbp: cbp ? Number(cbp) : null,
+    targetPrice: targetPrice ? Number(targetPrice) : null,
+    nextFollowUpDate: nextFollowUpDate ? new Date(nextFollowUpDate) : null,
+    lastContactDate: lastContactDate ? new Date(lastContactDate) : null,
+    remarks: remarks?.trim() || "",
     createdBy: req.user._id,
     statusHistory: [{
       status: "Open",
@@ -187,6 +210,9 @@ const updateLead = AsyncHandler(async (req, res) => {
     productNeeded, source, date, costPerLead,
     assignedTo, verificationStatus, verificationRemarks,
     status, dealId,
+    businessType, serviceType, sourcingOrigin,
+    gstNo, expectedOrderValue, nextFollowUpDate, lastContactDate, remarks, lostReason,
+    packingDetails, moq, cbp, targetPrice,
   } = req.body;
 
   // ── Status transition validation ──────────────────────────────────────────
@@ -243,6 +269,19 @@ const updateLead = AsyncHandler(async (req, res) => {
   if (verificationStatus) lead.verificationStatus = verificationStatus;
   if (verificationRemarks !== undefined) lead.verificationRemarks = verificationRemarks?.trim() || "";
   if (dealId) lead.dealId = dealId;
+  if (businessType !== undefined) lead.businessType = businessType || "";
+  if (serviceType !== undefined) lead.serviceType = serviceType || "";
+  if (sourcingOrigin !== undefined) lead.sourcingOrigin = sourcingOrigin || "";
+  if (gstNo !== undefined) lead.gstNo = gstNo?.trim() || "";
+  if (expectedOrderValue !== undefined) lead.expectedOrderValue = expectedOrderValue ? Number(expectedOrderValue) : null;
+  if (packingDetails !== undefined) lead.packingDetails = packingDetails?.trim() || "";
+  if (moq !== undefined) lead.moq = moq ? Number(moq) : null;
+  if (cbp !== undefined) lead.cbp = cbp ? Number(cbp) : null;
+  if (targetPrice !== undefined) lead.targetPrice = targetPrice ? Number(targetPrice) : null;
+  if (nextFollowUpDate !== undefined) lead.nextFollowUpDate = nextFollowUpDate ? new Date(nextFollowUpDate) : null;
+  if (lastContactDate !== undefined) lead.lastContactDate = lastContactDate ? new Date(lastContactDate) : null;
+  if (remarks !== undefined) lead.remarks = remarks?.trim() || "";
+  if (lostReason !== undefined) lead.lostReason = lostReason?.trim() || "";
 
   await lead.save();
 
@@ -325,4 +364,69 @@ const getLeadHistory = AsyncHandler(async (req, res) => {
   );
 });
 
-export { getLeads, createLead, getLeadById, updateLead, deleteLead, addNote, getLeadHistory };
+/**
+ * POST /api/v1/leads/:id/photos
+ * Upload a single reference photo. The multer middleware (uploadLeadPhoto)
+ * places the file in public/uploads/leads and exposes req.file; here we
+ * append the stored filename to the lead's photos array.
+ */
+const uploadLeadPhoto = AsyncHandler(async (req, res) => {
+  if (!req.file) throw new ApiError(400, "No photo uploaded (field name must be 'photo')");
+
+  const filter = { _id: req.params.id, ...scopeFilter(req.user) };
+  const lead = await Lead.findOne(filter);
+  if (!lead) throw new ApiError(404, "Lead not found");
+
+  lead.photos.push(req.file.filename);
+  await lead.save();
+
+  await AuditLog.create({
+    userId: req.user._id,
+    action: "UPLOAD_LEAD_PHOTO",
+    entity: "Lead",
+    entityId: lead._id,
+    newValue: { photo: req.file.filename, count: lead.photos.length },
+  });
+
+  res.status(201).json(new ApiResponse(201, { photos: lead.photos }, "Photo uploaded"));
+});
+
+/**
+ * DELETE /api/v1/leads/:id/photos/:index
+ * Remove a reference photo: delete the file from disk and splice the
+ * array entry at the given (zero-based) index.
+ */
+const removeLeadPhoto = AsyncHandler(async (req, res) => {
+  const filter = { _id: req.params.id, ...scopeFilter(req.user) };
+  const lead = await Lead.findOne(filter);
+  if (!lead) throw new ApiError(404, "Lead not found");
+
+  const index = parseInt(req.params.index);
+  if (isNaN(index) || index < 0 || index >= lead.photos.length) {
+    throw new ApiError(400, "Invalid photo index");
+  }
+
+  const [removed] = lead.photos.splice(index, 1);
+  // Best-effort file deletion — never fail the request on disk errors
+  const filePath = path.join(LEAD_PHOTO_DIR, removed);
+  try {
+    if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
+  } catch {
+    // logged silently; the array entry is already removed
+  }
+
+  await lead.save();
+
+  await AuditLog.create({
+    userId: req.user._id,
+    action: "REMOVE_LEAD_PHOTO",
+    entity: "Lead",
+    entityId: lead._id,
+    oldValue: { photo: removed },
+    newValue: { count: lead.photos.length },
+  });
+
+  res.status(200).json(new ApiResponse(200, { photos: lead.photos }, "Photo removed"));
+});
+
+export { getLeads, createLead, getLeadById, updateLead, deleteLead, addNote, getLeadHistory, uploadLeadPhoto, removeLeadPhoto };

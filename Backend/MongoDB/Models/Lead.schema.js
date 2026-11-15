@@ -46,6 +46,9 @@ const statusHistorySchema = new mongoose.Schema(
 const LEAD_STATUSES = ["Open", "In Progress", "Quotation Sent", "Closed Won", "Closed Lost"];
 const LEAD_SOURCES = ["Website", "Phone", "Referral", "Other"];
 const VERIFICATION_STATUSES = ["Unverified", "Verified", "Fraud"];
+const BUSINESS_TYPES = ["D2C", "E-com", "B2B", "Other"];
+const SERVICE_TYPES = ["Sourcing", "Packaging", "Website & IT", "Social Media", "Legal", "Investment", "Consultancy"];
+const SOURCING_ORIGINS = ["India", "China", "Either"];
 
 // Valid forward transitions — prevents arbitrary status jumps
 const STATUS_TRANSITIONS = {
@@ -58,6 +61,11 @@ const STATUS_TRANSITIONS = {
 
 const leadSchema = new mongoose.Schema(
   {
+    leadId: {
+      type: String,
+      unique: true,
+      sparse: true,
+    },
     clientName: {
       type: String,
       required: true,
@@ -116,6 +124,74 @@ const leadSchema = new mongoose.Schema(
       trim: true,
       default: "",
     },
+    // Business type of the client
+    businessType: {
+      type: String,
+      enum: [...BUSINESS_TYPES, ""],
+      default: "",
+    },
+    // Service SourceUp is providing
+    serviceType: {
+      type: String,
+      enum: [...SERVICE_TYPES, ""],
+      default: "",
+    },
+    // Where sourcing will happen
+    sourcingOrigin: {
+      type: String,
+      enum: [...SOURCING_ORIGINS, ""],
+      default: "",
+    },
+    gstNo: {
+      type: String,
+      trim: true,
+      default: "",
+    },
+    expectedOrderValue: {
+      type: Number,
+      default: null,
+    },
+    // ── R1 enrichment: procurement context ────────────────────────────────
+    packingDetails: {
+      type: String,
+      trim: true,
+      default: "",
+    },
+    moq: {
+      type: Number,
+      default: null,
+    },
+    cbp: {
+      type: Number,
+      default: null,
+    },
+    targetPrice: {
+      type: Number,
+      default: null,
+    },
+    // Stored filenames under public/uploads/leads (multi-photo gallery)
+    photos: {
+      type: [String],
+      default: [],
+    },
+    nextFollowUpDate: {
+      type: Date,
+      default: null,
+    },
+    lastContactDate: {
+      type: Date,
+      default: null,
+    },
+    remarks: {
+      type: String,
+      trim: true,
+      default: "",
+    },
+    lostReason: {
+      type: String,
+      trim: true,
+      default: "",
+    },
     status: {
       type: String,
       enum: LEAD_STATUSES,
@@ -168,5 +244,5 @@ leadSchema.index({ email: 1 });
 leadSchema.index({ phone: 1 });
 leadSchema.index({ clientName: "text", company: "text", productNeeded: "text", location: "text" });
 
-export { LEAD_STATUSES, LEAD_SOURCES, VERIFICATION_STATUSES, STATUS_TRANSITIONS };
+export { LEAD_STATUSES, LEAD_SOURCES, VERIFICATION_STATUSES, STATUS_TRANSITIONS, BUSINESS_TYPES, SERVICE_TYPES, SOURCING_ORIGINS };
 export const Lead = mongoose.model("Lead", leadSchema);

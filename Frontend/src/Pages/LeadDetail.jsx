@@ -8,14 +8,20 @@ import { useAuth } from "../context/Authcontext";
 import {
   addNote, deleteLead, getLeadById,
   getLeadHistory, updateLead,
+  uploadLeadPhoto, removeLeadPhoto,
 } from "../api/leadsApi.js";
 import PortalDropdown from "../components/PortalDropdown.jsx";
+import PhotoUpload from "../components/PhotoUpload.jsx";
+import QuotationsPanel from "../components/QuotationsPanel.jsx";
 
 // ─── Constants (mirrors backend) ─────────────────────────────────────────────
 
 const STATUSES = ["Open", "In Progress", "Quotation Sent", "Closed Won", "Closed Lost"];
 const SOURCES  = ["Website", "Phone", "Referral", "Other"];
 const VERIFICATION = ["Unverified", "Verified", "Fraud"];
+const BUSINESS_TYPES = ["D2C", "E-com", "B2B", "Other"];
+const SERVICE_TYPES = ["Sourcing", "Packaging", "Website & IT", "Social Media", "Legal", "Investment", "Consultancy"];
+const SOURCING_ORIGINS = ["India", "China", "Either"];
 
 const STATUS_TRANSITIONS = {
   "Open":           ["In Progress", "Closed Lost"],
@@ -237,10 +243,13 @@ export default function LeadDetail() {
   const [advancingTo, setAdvancingTo]   = useState("");
   const [statusError, setStatusError]   = useState("");
   const [statusSaving, setStatusSaving] = useState(false);
+  const [lostReasonInput, setLostReasonInput] = useState("");
 
   const canEdit   = user?.role === "sales" || user?.role === "superadmin";
   const canDelete = user?.role === "superadmin";
   const canHistory = user?.role === "manager" || user?.role === "superadmin";
+  // canWrite for quotations: purchase, manager, superadmin can add/select/delete
+  const canWrite  = user?.role === "purchase" || user?.role === "manager" || user?.role === "superadmin";
 
   // ── Load lead ──────────────────────────────────────────────────────────────
   useEffect(() => {
@@ -266,14 +275,36 @@ export default function LeadDetail() {
     setLead(res.data.data);
   };
 
+  // ── Reference photos (R1) ──────────────────────────────────────────────────
+  // Upload/remove then refresh the whole lead so photos + any server state
+  // stay in sync with what's on disk.
+  const refreshLead = async () => {
+    const res = await getLeadById(id);
+    setLead(res.data.data);
+  };
+
+  const handlePhotoUpload = async (file) => {
+    await uploadLeadPhoto(id, file);
+    await refreshLead();
+  };
+
+  const handlePhotoRemove = async (index) => {
+    await removeLeadPhoto(id, index);
+    await refreshLead();
+  };
+
   // ── Status advance ─────────────────────────────────────────────────────────
   const handleAdvanceStatus = async () => {
     if (!advancingTo) return;
     setStatusSaving(true); setStatusError("");
     try {
-      const res = await updateLead(id, { status: advancingTo, statusRemark });
+      const payload = { status: advancingTo, statusRemark };
+      if (advancingTo === "Closed Lost" && lostReasonInput.trim()) {
+        payload.lostReason = lostReasonInput.trim();
+      }
+      const res = await updateLead(id, payload);
       setLead(res.data.data);
-      setAdvancingTo(""); setStatusRemark("");
+      setAdvancingTo(""); setStatusRemark(""); setLostReasonInput("");
       // Refresh history if open
       if (activeTab === "history") {
         const h = await getLeadHistory(id);
@@ -373,6 +404,9 @@ export default function LeadDetail() {
             {lead.company && (
               <p style={{ fontSize: 13, color: "var(--text-muted)", marginTop: 2 }}>{lead.company}</p>
             )}
+            {lead.leadId && (
+              <p style={{ fontSize: 11, color: "var(--accent)", marginTop: 2, fontWeight: 600, letterSpacing: "0.04em" }}>{lead.leadId}</p>
+            )}
           </div>
         </div>
         <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
@@ -413,6 +447,13 @@ export default function LeadDetail() {
                 {statusSaving ? "Saving…" : "Update"}
               </button>
             </div>
+            {advancingTo === "Closed Lost" && (
+              <div style={{ marginTop: 10 }}>
+                <input className="input-glass" placeholder="Lost reason (why was this lead lost?)"
+                  value={lostReasonInput} onChange={e => setLostReasonInput(e.target.value)}
+                  style={{ width: "100%", height: 42, fontSize: 13 }} />
+              </div>
+            )}
             {statusError && (
               <div className="error-banner" style={{ marginTop: 10 }}>
                 <AlertCircle size={14} />{statusError}
@@ -507,6 +548,82 @@ export default function LeadDetail() {
                 </span>
               </div>
             </div>
+          </div>
+
+          {/* Extended info — Sprint 2 */}
+          <div className="glass r-lg" style={{ padding: 20 }}>
+            {sectionTitle("Extended Info")}
+            <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+              <EditField label="Business Type" value={lead.businessType || ""} disabled={!canEdit}
+                options={BUSINESS_TYPES} onSave={v => patchField({ businessType: v })} />
+              <EditField label="Service Type" value={lead.serviceType || ""} disabled={!canEdit}
+                options={SERVICE_TYPES} onSave={v => patchField({ serviceType: v })} />
+              <EditField label="Sourcing Origin" value={lead.sourcingOrigin || ""} disabled={!canEdit}
+                options={SOURCING_ORIGINS} onSave={v => patchField({ sourcingOrigin: v })} />
+              <EditField label="GST No" value={lead.gstNo || ""} disabled={!canEdit}
+                onSave={v => patchField({ gstNo: v })} />
+              <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
+                <span style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.07em",
+                  textTransform: "uppercase", color: "var(--text-secondary)" }}>Expected Order Value</span>
+                <span style={{ fontSize: 13, color: lead.expectedOrderValue ? "var(--text-primary)" : "var(--text-muted)" }}>
+                  {lead.expectedOrderValue != null ? `\u20b9${Number(lead.expectedOrderValue).toLocaleString("en-IN")}` : "\u2014"}
+                  {lead.expectedOrderValue != null && lead.expectedOrderValue < 100000 && (
+                    <span style={{ color: "#fbbf24", fontSize: 11, marginLeft: 8 }}>\u26a0 Below \u20b91L</span>
+                  )}
+                </span>
+              </div>
+              <EditField label="Expected Order Value (\u20b9)" value={lead.expectedOrderValue != null ? String(lead.expectedOrderValue) : ""}
+                type="number" disabled={!canEdit} onSave={v => patchField({ expectedOrderValue: v })} />
+              <EditField label="Remarks" value={lead.remarks || ""} disabled={!canEdit}
+                onSave={v => patchField({ remarks: v })} />
+              {lead.nextFollowUpDate && (
+                <div style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "5px 12px",
+                  borderRadius: 9999, background: "rgb(139 92 246/0.12)", color: "#8b5cf6",
+                  fontSize: 11, fontWeight: 600 }}>
+                  Next Follow-Up: {new Date(lead.nextFollowUpDate).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })}
+                </div>
+              )}
+              <EditField label="Next Follow-Up" value={lead.nextFollowUpDate ? new Date(lead.nextFollowUpDate).toISOString().slice(0, 10) : ""}
+                type="date" disabled={!canEdit} onSave={v => patchField({ nextFollowUpDate: v })} />
+              <EditField label="Last Contact" value={lead.lastContactDate ? new Date(lead.lastContactDate).toISOString().slice(0, 10) : ""}
+                type="date" disabled={!canEdit} onSave={v => patchField({ lastContactDate: v })} />
+              {lead.status === "Closed Lost" && (
+                <EditField label="Lost Reason" value={lead.lostReason || ""} disabled={!canEdit}
+                  onSave={v => patchField({ lostReason: v })} />
+              )}
+            </div>
+          </div>
+
+          {/* Procurement — R1 enrichment fields */}
+          <div className="glass r-lg" style={{ padding: 20 }}>
+            {sectionTitle("Procurement")}
+            <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+              <EditField label="Packing Details" value={lead.packingDetails || ""} disabled={!canEdit}
+                onSave={v => patchField({ packingDetails: v })} />
+              <EditField label="MOQ / Qty" value={lead.moq != null ? String(lead.moq) : ""} type="number"
+                disabled={!canEdit} onSave={v => patchField({ moq: v })} />
+              <EditField label="CBP (₹)" value={lead.cbp != null ? String(lead.cbp) : ""} type="number"
+                disabled={!canEdit} onSave={v => patchField({ cbp: v })} />
+              <EditField label="Target Price (₹)" value={lead.targetPrice != null ? String(lead.targetPrice) : ""} type="number"
+                disabled={!canEdit} onSave={v => patchField({ targetPrice: v })} />
+            </div>
+          </div>
+
+          {/* Reference photos — R1 */}
+          <div className="glass r-lg" style={{ padding: 20, gridColumn: "1 / -1" }}>
+            {sectionTitle("Reference Photos")}
+            <PhotoUpload
+              photos={lead.photos || []}
+              canEdit={canEdit}
+              onUpload={handlePhotoUpload}
+              onRemove={handlePhotoRemove}
+            />
+          </div>
+
+          {/* Quotations — R3 */}
+          <div className="glass r-lg" style={{ padding: 20, gridColumn: "1 / -1" }}>
+            {sectionTitle("Quotations")}
+            <QuotationsPanel leadId={id} canWrite={canWrite} />
           </div>
         </div>
       )}

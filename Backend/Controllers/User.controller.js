@@ -53,4 +53,52 @@ const getUsers = AsyncHandler(async (req, res) => {
   res.status(200).json(new ApiResponse(200, users, "Users fetched"));
 });
 
-export { createUser, getUsers };
+/**
+ * PATCH /api/v1/users/:id
+ * Update a user's role and/or active status.
+ * Body: { role?, isActive? }
+ */
+const updateUser = AsyncHandler(async (req, res) => {
+  const { role, isActive } = req.body;
+  const user = await User.findById(req.params.id);
+  if (!user) throw new ApiError(404, "User not found");
+
+  // Prevent self-deactivation
+  if (req.user._id.toString() === user._id.toString() && isActive === false) {
+    throw new ApiError(400, "You cannot deactivate your own account");
+  }
+
+  // Prevent demoting the last superadmin
+  if (user.role === "superadmin" && role && role !== "superadmin") {
+    const superadminCount = await User.countDocuments({ role: "superadmin", isActive: true });
+    if (superadminCount <= 1) {
+      throw new ApiError(400, "Cannot demote the last active superadmin");
+    }
+  }
+
+  const oldRole = user.role;
+  const oldActive = user.isActive;
+
+  if (role !== undefined) {
+    if (!ROLES.includes(role)) throw new ApiError(400, "Invalid role");
+    user.role = role;
+  }
+  if (isActive !== undefined) user.isActive = isActive;
+
+  await user.save();
+
+  const updated = await User.findById(user._id).select("-password -RefreshToken");
+
+  await AuditLog.create({
+    userId: req.user._id,
+    action: "UPDATE_USER",
+    entity: "User",
+    entityId: user._id,
+    oldValue: { role: oldRole, isActive: oldActive },
+    newValue: { role: user.role, isActive: user.isActive },
+  });
+
+  res.status(200).json(new ApiResponse(200, updated, "User updated"));
+});
+
+export { createUser, getUsers, updateUser };

@@ -1,6 +1,6 @@
-import { useEffect, useState } from "react";
-import { AlertCircle } from "lucide-react";
-import { createUser, getUsers } from "../api/usersApi.js";
+﻿import { useEffect, useState } from "react";
+import { AlertCircle, Power } from "lucide-react";
+import { createUser, getUsers, updateUser } from "../api/usersApi.js";
 import { ValidEmail, ValidPassword, ValidUserName } from "../utils/Validators.js";
 import PortalDropdown from "../components/PortalDropdown.jsx";
 
@@ -19,6 +19,29 @@ export default function Users() {
   const loadUsers = async () => {
     const res = await getUsers();
     setUsers(res.data.data || []);
+  };
+
+  const handleRoleChange = async (userId, newRole) => {
+    if (newRole === users.find((u) => u._id === userId)?.role) return;
+    setError(""); setSuccess("");
+    try {
+      await updateUser(userId, { role: newRole });
+      await loadUsers();
+      setSuccess(`Role updated to ${newRole}`);
+    } catch (err) {
+      setError(err.response?.data?.message || "Could not update role");
+    }
+  };
+
+  const handleToggleActive = async (userId, currentActive) => {
+    setError(""); setSuccess("");
+    try {
+      await updateUser(userId, { isActive: !currentActive });
+      await loadUsers();
+      setSuccess(`User ${!currentActive ? "activated" : "deactivated"}`);
+    } catch (err) {
+      setError(err.response?.data?.message || "Could not update user");
+    }
   };
 
   useEffect(() => {
@@ -84,6 +107,7 @@ export default function Users() {
               <th style={{ padding: "8px 6px" }}>Email</th>
               <th style={{ padding: "8px 6px" }}>Role</th>
               <th style={{ padding: "8px 6px" }}>Active</th>
+              <th style={{ padding: "8px 6px" }}>Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -93,6 +117,27 @@ export default function Users() {
                 <td style={{ padding: "10px 6px" }}>{u.email}</td>
                 <td style={{ padding: "10px 6px", textTransform: "capitalize" }}>{u.role}</td>
                 <td style={{ padding: "10px 6px" }}>{u.isActive ? "Yes" : "No"}</td>
+                <td style={{ padding: "10px 6px", display: "flex", gap: 8, alignItems: "center" }}>
+                  <PortalDropdown
+                    value={u.role}
+                    onChange={(v) => handleRoleChange(u._id, v)}
+                    options={ROLES}
+                  />
+                  <button
+                    type="button"
+                    className="btn-icon"
+                    onClick={() => handleToggleActive(u._id, u.isActive)}
+                    title={u.isActive ? "Deactivate user" : "Activate user"}
+                    style={{
+                      width: 28, height: 28,
+                      color: u.isActive ? "#ef4444" : "#22c55e",
+                      borderColor: u.isActive ? "rgb(239 68 68 / 0.3)" : "rgb(34 197 94 / 0.3)",
+                      background: u.isActive ? "rgb(239 68 68 / 0.08)" : "rgb(34 197 94 / 0.08)",
+                    }}
+                  >
+                    <Power size={13} />
+                  </button>
+                </td>
               </tr>
             ))}
           </tbody>
@@ -101,3 +146,4 @@ export default function Users() {
     </div>
   );
 }
+

@@ -5,3 +5,9 @@ dist/
 *.log
 .DS_Store
 Frontend/.vite/
+
+# Ignore uploaded files but keep the directory structure
+Backend/public/uploads/leads/*
+Backend/public/uploads/quotations/*
+!Backend/public/uploads/leads/.gitkeep
+!Backend/public/uploads/quotations/.gitkeep

@@ -14,6 +14,9 @@ import ImportLeadsModal from "../components/ImportLeadsModal.jsx";
 const STATUSES = ["Open", "In Progress", "Quotation Sent", "Closed Won", "Closed Lost"];
 const SOURCES  = ["Website", "Phone", "Referral", "Other"];
 const VERIFICATION = ["Unverified", "Verified", "Fraud"];
+const BUSINESS_TYPES = ["D2C", "E-com", "B2B", "Other"];
+const SERVICE_TYPES = ["Sourcing", "Packaging", "Website & IT", "Social Media", "Legal", "Investment", "Consultancy"];
+const SOURCING_ORIGINS = ["India", "China", "Either"];
 
 const STATUS_COLORS = {
   "Open":           { bg: "rgb(45 212 191 / 0.12)",  color: "#2dd4bf" },
@@ -54,6 +57,9 @@ function AddLeadModal({ onClose, onCreated, salesUsers, currentUser }) {
     source: "Other", costPerLead: "",
     assignedTo: currentUser.role === "sales" ? currentUser._id : "",
     verificationStatus: "Unverified",
+    businessType: "", serviceType: "", sourcingOrigin: "",
+    gstNo: "", expectedOrderValue: "", remarks: "",
+    packingDetails: "", moq: "", cbp: "", targetPrice: "",
   });
   const [loading, setLoading] = useState(false);
   const [error, setError]     = useState("");
@@ -162,6 +168,60 @@ function AddLeadModal({ onClose, onCreated, salesUsers, currentUser }) {
             <div style={fieldStyle}>
               <label style={labelStyle}>Verification</label>
               <PortalDropdown value={form.verificationStatus} onChange={setV("verificationStatus")} options={VERIFICATION} />
+            </div>
+          </div>
+
+          {/* Row 5 — Sprint 2 fields */}
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12 }}>
+            <div style={fieldStyle}>
+              <label style={labelStyle}>Business Type</label>
+              <PortalDropdown value={form.businessType} onChange={setV("businessType")} options={BUSINESS_TYPES} placeholder="Select" />
+            </div>
+            <div style={fieldStyle}>
+              <label style={labelStyle}>Service Type</label>
+              <PortalDropdown value={form.serviceType} onChange={setV("serviceType")} options={SERVICE_TYPES} placeholder="Select" />
+            </div>
+            <div style={fieldStyle}>
+              <label style={labelStyle}>Sourcing Origin</label>
+              <PortalDropdown value={form.sourcingOrigin} onChange={setV("sourcingOrigin")} options={SOURCING_ORIGINS} placeholder="Select" />
+            </div>
+          </div>
+
+          {/* Row 6 — GST, Expected Order Value, Remarks */}
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12 }}>
+            <div style={fieldStyle}>
+              <label style={labelStyle}>GST No.</label>
+              <input className="input-glass" placeholder="22AAAAA0000A1Z5" value={form.gstNo} onChange={set("gstNo")} />
+            </div>
+            <div style={fieldStyle}>
+              <label style={labelStyle}>Expected Order Value (₹)</label>
+              <input className="input-glass" type="number" min="0" placeholder="100000" value={form.expectedOrderValue} onChange={set("expectedOrderValue")} />
+            </div>
+            <div style={fieldStyle}>
+              <label style={labelStyle}>Remarks</label>
+              <input className="input-glass" placeholder="Quick comment" value={form.remarks} onChange={set("remarks")} />
+            </div>
+          </div>
+
+          {/* Row 7 — Packing details (free text, full width) */}
+          <div style={fieldStyle}>
+            <label style={labelStyle}>Packing Details</label>
+            <input className="input-glass" placeholder="e.g. 10 pcs / carton, foam padding" value={form.packingDetails} onChange={set("packingDetails")} />
+          </div>
+
+          {/* Row 8 — Procurement figures: MOQ, CBP, Target Price */}
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12 }}>
+            <div style={fieldStyle}>
+              <label style={labelStyle}>MOQ / Qty</label>
+              <input className="input-glass" type="number" min="0" placeholder="500" value={form.moq} onChange={set("moq")} />
+            </div>
+            <div style={fieldStyle}>
+              <label style={labelStyle}>CBP (₹)</label>
+              <input className="input-glass" type="number" min="0" step="0.01" placeholder="120" value={form.cbp} onChange={set("cbp")} />
+            </div>
+            <div style={fieldStyle}>
+              <label style={labelStyle}>Target Price (₹)</label>
+              <input className="input-glass" type="number" min="0" step="0.01" placeholder="100" value={form.targetPrice} onChange={set("targetPrice")} />
             </div>
           </div>
 
@@ -364,7 +424,7 @@ export default function Leads() {
         <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
           <thead>
             <tr style={{ color: "var(--text-muted)", textAlign: "left", borderBottom: "1px solid var(--glass-border)" }}>
-              {["Client", "Product", "Source", "Assigned To", "Cost/Lead", "Status", "Verification", "Date"].map(h => (
+              {["Client", "Product", "Biz Type", "Service", "Source", "Assigned To", "Cost/Lead", "Status", "Verification", "Date"].map(h => (
                 <th key={h} style={{ padding: "10px 14px", fontWeight: 600, fontSize: 11,
                   letterSpacing: "0.06em", textTransform: "uppercase", whiteSpace: "nowrap" }}>
                   {h}
@@ -375,14 +435,14 @@ export default function Leads() {
           <tbody>
             {loading ? (
               <tr>
-                <td colSpan={8} style={{ padding: "40px 14px", textAlign: "center",
+                <td colSpan={10} style={{ padding: "40px 14px", textAlign: "center",
                   color: "var(--text-muted)", fontSize: 13 }}>
                   Loading…
                 </td>
               </tr>
             ) : leads.length === 0 ? (
               <tr>
-                <td colSpan={8} style={{ padding: "40px 14px", textAlign: "center",
+                <td colSpan={10} style={{ padding: "40px 14px", textAlign: "center",
                   color: "var(--text-muted)", fontSize: 13 }}>
                   {hasFilters ? "No leads match your filters." : "No leads yet. Add your first lead."}
                 </td>
@@ -407,12 +467,21 @@ export default function Leads() {
                     overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                     {lead.productNeeded}
                   </td>
+                  <td style={{ padding: "11px 14px" }}>
+                    {lead.businessType && <Badge label={lead.businessType} />}
+                  </td>
+                  <td style={{ padding: "11px 14px" }}>
+                    {lead.serviceType && <Badge label={lead.serviceType} />}
+                  </td>
                   <td style={{ padding: "11px 14px", color: "var(--text-secondary)" }}>{lead.source}</td>
                   <td style={{ padding: "11px 14px", color: "var(--text-secondary)" }}>
                     {lead.assignedTo?.username || "—"}
                   </td>
                   <td style={{ padding: "11px 14px", color: "var(--text-secondary)", whiteSpace: "nowrap" }}>
-                    ₹{Number(lead.costPerLead).toLocaleString("en-IN")}
+                    <span>₹{Number(lead.costPerLead).toLocaleString("en-IN")}</span>
+                    {lead.expectedOrderValue != null && lead.expectedOrderValue < 100000 && (
+                      <TriangleAlert size={12} style={{ marginLeft: 5, color: "#fbbf24", verticalAlign: "middle" }} title="Expected order value < ₹1L" />
+                    )}
                   </td>
                   <td style={{ padding: "11px 14px" }}>
                     <Badge label={lead.status} scheme={STATUS_COLORS[lead.status]} />

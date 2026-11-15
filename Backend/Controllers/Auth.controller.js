@@ -26,15 +26,15 @@ const register = AsyncHandler(async (req, res) => {
     throw new ApiError(400, "One of the fields is empty");
   }
 
-  const existingUsers = await User.countDocuments();
-  // Allow multiple superadmin accounts during development.
-  // TODO: re-enable this check before production deployment.
-  // if (existingUsers > 0) {
-  //   throw new ApiError(403, "Registration is closed. Ask a SuperAdmin to create your account.");
-  // }
-
   if (!ValidPassword(password) || !ValidUserName(username) || !ValidEmail(email)) {
     throw new ApiError(400, "Validation gone wrong");
+  }
+
+  // Bootstrap-only: the first user becomes superadmin; further accounts are
+  // created by a superadmin via /users.
+  const existingUsers = await User.countDocuments();
+  if (existingUsers > 0) {
+    throw new ApiError(403, "Registration is closed. Ask a SuperAdmin to create your account.");
   }
 
   const user = await User.create({
@@ -65,22 +65,21 @@ const login = AsyncHandler(async (req, res) => {
   if ([username, password].some((field) => field?.trim() === "")) {
     throw new ApiError(400, "One of the fields is empty");
   }
+  const isProd = process.env.NODE_ENV === "production";
+  const cookieOptions = {
+    httpOnly: true,
+    secure: isProd,                        // HTTPS only in production
+    sameSite: isProd ? "none" : "lax",     // cross-site in prod (Vercel ↔ Render)
+  };
   const CheckUser = await User.findOne({ username });
-  if (!CheckUser) {
-    throw new ApiError(404, "User doesn't exist please register first");
-  }
-  if (!CheckUser.isActive) {
-    throw new ApiError(403, "Account is inactive");
+  if (!CheckUser || !CheckUser.isActive) {
+    // Deliberately generic — do not reveal whether username exists or account is inactive
+    throw new ApiError(401, "Invalid credentials");
   }
   const IsPasswordCorrect = await bcrypt.compare(password, CheckUser.password);
   if (!IsPasswordCorrect) {
-    throw new ApiError(401, "Wrong user credentials entered");
+    throw new ApiError(401, "Invalid credentials");
   }
-  const cookieOptions = {
-  httpOnly: true,
-  secure: process.env.NODE_ENV === "production",
-  sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
-};
   const safeUser = await User.findById(CheckUser._id).select("-password -RefreshToken");
   const { accesstoken, refreshtoken } = await generateAccessandRefreshToken(CheckUser._id);
 
@@ -102,6 +101,12 @@ const login = AsyncHandler(async (req, res) => {
 });
 
 const logout = AsyncHandler(async (req, res) => {
+  const isProd = process.env.NODE_ENV === "production";
+  const cookieOptions = {
+    httpOnly: true,
+    secure: isProd,                        // HTTPS only in production
+    sameSite: isProd ? "none" : "lax",     // cross-site in prod (Vercel ↔ Render)
+  };
   await User.findByIdAndUpdate(
     req.user._id,
     {
@@ -116,11 +121,7 @@ const logout = AsyncHandler(async (req, res) => {
     entity: "User",
     entityId: req.user._id,
   });
-const cookieOptions = {
-  httpOnly: true,
-  secure: process.env.NODE_ENV === "production",
-  sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
-};
+
   return res
     .status(200)
     .clearCookie("accessToken", cookieOptions)
