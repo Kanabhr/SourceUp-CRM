@@ -1,5 +1,7 @@
 {
   "rewrites": [
+    { "source": "/api/v1/:path*", "destination": "https://YOUR-RENDER-SERVICE.onrender.com/api/v1/:path*" },
+    { "source": "/uploads/:path*", "destination": "https://YOUR-RENDER-SERVICE.onrender.com/uploads/:path*" },
     { "source": "/(.*)", "destination": "/index.html" }
   ],
   "headers": [

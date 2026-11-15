@@ -5,6 +5,9 @@ import { ApiError } from "../Utils/ApiError.js";
 import { ApiResponse } from "../Utils/ApiResponse.js";
 import { ValidPassword, ValidEmail, ValidUserName, InputValidation } from "../Utils/Validation.js";
 import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
+
+const REFRESH_COOKIE_MAX_AGE = 7 * 24 * 60 * 60 * 1000; // matches REFRESH_TOKEN_EXPIRY=7d
 
 const generateAccessandRefreshToken = async (userid) => {
   try {
@@ -93,11 +96,46 @@ const login = AsyncHandler(async (req, res) => {
   return res
     .status(200)
     .cookie("accessToken", accesstoken, cookieOptions)
-    .cookie("refreshToken", refreshtoken, cookieOptions)
+    .cookie("refreshToken", refreshtoken, { ...cookieOptions, maxAge: REFRESH_COOKIE_MAX_AGE })
     .json({
       message: "User Logged In",
       user: safeUser,
     });
+});
+
+// POST /auth/refresh — trade a valid refresh-token cookie for a new access
+// token, so users aren't forced to log in again every 30 minutes.
+// The refresh token itself is not rotated (avoids races between browser tabs);
+// it stays valid until it expires or the user logs out (which clears it in DB).
+const refreshAccessToken = AsyncHandler(async (req, res) => {
+  const incoming = req.cookies?.refreshToken;
+  if (!incoming) {
+    throw new ApiError(401, "No refresh token");
+  }
+
+  let decoded;
+  try {
+    decoded = jwt.verify(incoming, process.env.REFRESH_TOKEN_SECRET);
+  } catch {
+    throw new ApiError(401, "Invalid or expired refresh token");
+  }
+
+  const user = await User.findById(decoded?._id);
+  if (!user || !user.isActive || user.RefreshToken !== incoming) {
+    throw new ApiError(401, "Refresh token is no longer valid");
+  }
+
+  const isProd = process.env.NODE_ENV === "production";
+  const cookieOptions = {
+    httpOnly: true,
+    secure: isProd,
+    sameSite: isProd ? "none" : "lax",
+  };
+
+  return res
+    .status(200)
+    .cookie("accessToken", user.generateAccessToken(), cookieOptions)
+    .json(new ApiResponse(200, {}, "Access token refreshed"));
 });
 
 const logout = AsyncHandler(async (req, res) => {
@@ -133,4 +171,4 @@ const getCurrentUser = AsyncHandler(async (req, res) => {
   res.status(200).json(new ApiResponse(200, req.user, "User fetched"));
 });
 
-export { register, login, logout, getCurrentUser };
+export { register, login, logout, getCurrentUser, refreshAccessToken };

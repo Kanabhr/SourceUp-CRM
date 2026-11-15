@@ -9,14 +9,19 @@ import { app } from "./app.js";
 // Prevents the server from starting in an insecure state.
 const PLACEHOLDER_ACCESS  = "replace_with_access_token_secret";
 const PLACEHOLDER_REFRESH = "replace_with_refresh_token_secret";
+// The value shipped in Backend/.env.example
+const PLACEHOLDER_EXAMPLE = "replace_with_64_byte_hex";
+
+const isBadSecret = (secret, placeholder) =>
+  !secret || secret === placeholder || secret === PLACEHOLDER_EXAMPLE;
 
 if (
-  process.env.ACCESS_TOKEN_SECRET  === PLACEHOLDER_ACCESS ||
-  process.env.REFRESH_TOKEN_SECRET === PLACEHOLDER_REFRESH
+  isBadSecret(process.env.ACCESS_TOKEN_SECRET, PLACEHOLDER_ACCESS) ||
+  isBadSecret(process.env.REFRESH_TOKEN_SECRET, PLACEHOLDER_REFRESH)
 ) {
   throw new Error(
-    "FATAL: JWT secrets are still set to placeholder values in .env.local.\n" +
-    "Set ACCESS_TOKEN_SECRET and REFRESH_TOKEN_SECRET before starting the server."
+    "FATAL: JWT secrets are missing or still set to placeholder values.\n" +
+    "Set ACCESS_TOKEN_SECRET and REFRESH_TOKEN_SECRET (env vars on Render, .env.local locally) before starting the server."
   );
 }
 
