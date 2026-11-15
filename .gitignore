@@ -11,3 +11,6 @@ Backend/public/uploads/leads/*
 Backend/public/uploads/quotations/*
 !Backend/public/uploads/leads/.gitkeep
 !Backend/public/uploads/quotations/.gitkeep
+
+# Local scratch/test artifacts
+Backend/__*

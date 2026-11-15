@@ -10,6 +10,14 @@ const FIVE_MB = 5 * 1024 * 1024;
 const IMAGE_MIME = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
 const QUOTATION_MIME = [...IMAGE_MIME, "application/pdf"];
 
+const EXT_BY_MIME = {
+  "image/jpeg": ".jpg",
+  "image/jpg": ".jpg",
+  "image/png": ".png",
+  "image/webp": ".webp",
+  "application/pdf": ".pdf",
+};
+
 /**
  * Build a diskStorage engine whose destination ensures the target
  * directory exists before writing (created lazily on first upload).
@@ -22,7 +30,9 @@ const makeDiskStorage = (subDir) => {
       cb(null, dest);
     },
     filename: (_req, file, cb) => {
-      const ext = path.extname(file.originalname).toLowerCase() || `.${file.mimetype.split("/")[1]}`;
+      // Extension comes from the (already allow-listed) MIME type, never from
+      // the client-supplied filename, so e.g. "evil.html" can't be stored.
+      const ext = EXT_BY_MIME[file.mimetype] || "";
       const unique = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
       cb(null, `${unique}${ext}`);
     },

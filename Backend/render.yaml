@@ -11,6 +11,8 @@ services:
         value: production
       - key: PORT
         value: 3000
+      - key: TRUST_PROXY_HOPS
+        value: 2             # Vercel rewrite -> Render. Use 1 if the browser calls Render directly
       - key: MONGODB_URI
         sync: false          # set manually in Render dashboard — never commit
       - key: ACCESS_TOKEN_SECRET

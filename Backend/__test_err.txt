@@ -1,2 +1,0 @@
-◇ injected env (14) from .env.local
-GLOBAL ERROR: Operation `leads.find()` buffering timed out after 10000ms

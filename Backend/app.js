@@ -13,10 +13,18 @@ import dashboardRouter from "./Routes/Dashboard.routes.js";
 import reportsRouter from "./Routes/Reports.routes.js";
 import exportRouter from "./Routes/Export.routes.js";
 import servicePrefixRouter from "./Routes/ServicePrefix.routes.js";
+import { VerifyJWT } from "./Middleware/Auth.middleware.js";
 
 const app = express();
 
 const isProd = process.env.NODE_ENV === "production";
+
+// Render (and Vercel, when it proxies /api/v1 to Render) sit in front of this
+// app. Without this, req.ip is the proxy's IP, so every user would share one
+// login rate-limit bucket. TRUST_PROXY_HOPS = number of proxies in front:
+//   1 = Render only (browser calls Render directly)
+//   2 = Vercel rewrite -> Render (recommended setup, see Frontend/vercel.json)
+app.set("trust proxy", Number(process.env.TRUST_PROXY_HOPS) || 1);
 
 const allowedOrigins = [
   // Always allow the configured frontend URL (Vercel deployment)
@@ -27,7 +35,10 @@ const allowedOrigins = [
     "http://localhost:5174",
     "http://localhost:4173",
   ]),
-].filter(Boolean);
+]
+  .filter(Boolean)
+  // Browsers send Origin without a trailing slash; tolerate one in the env var
+  .map((origin) => origin.replace(/\/+$/, ""));
 
 app.use(
   cors({
@@ -44,8 +55,16 @@ app.use(
 );
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true, limit: "10mb" }));
-app.use(express.static("public"));
 app.use(cookieParser());
+// Uploaded photos / quotation files: login required (previously public),
+// and nosniff so a mislabelled file can never be executed as HTML/JS.
+app.use(
+  "/uploads",
+  VerifyJWT,
+  express.static("public/uploads", {
+    setHeaders: (res) => res.setHeader("X-Content-Type-Options", "nosniff"),
+  }),
+);
 app.get("/api/v1/health", (_req, res) => res.status(200).json({ status: "OK" }));
 app.use("/api/v1/auth", authRouter);
 app.use("/api/v1/users", userRouter);
